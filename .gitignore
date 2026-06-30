@@ -1,0 +1,19 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Configuration locale du SDK (ne pas committer)
+local.properties
+
+# Logs et divers
+*.log
+.DS_Store
+Thumbs.db
