@@ -1,7 +1,9 @@
 /* =========================================================================
-   app.js — Logique de l'application : vues, navigation par onglets, détail
-   des projets avec progression, favoris, recherche globale, onglet Aide
-   (dépannage + ressources) et réglage de la taille du texte.
+   app.js — Logique de l'application Termux Guide.
+
+   Vues & navigation par onglets · détail de projet avec progression cochable,
+   notes perso et export script · favoris · recherche globale · coloration
+   syntaxique · thème de couleur · taille du texte · glossaire · sauvegarde.
 
    Persistance via localStorage (activé côté WebView par MainActivity).
    Aucune dépendance externe : JavaScript natif uniquement.
@@ -10,21 +12,28 @@
 (function () {
   "use strict";
 
+  var APP_VERSION = "2.0";
+  var CAT_ORDER = ["Bases", "Système", "Réseau", "Dev", "Média", "Outils", "Fun"];
+
   /* --------------------------------------------------------------- ÉTAT --- */
   var state = {
     tab: "home",
     project: null,
     search: false,
-    projFilter: "all",   /* "all" | "fav" pour l'onglet Projets */
-    codesFav: false,     /* filtre favoris dans l'onglet Codes   */
-    font: 100
+    projFilter: "all",   /* "all" | "fav" | "cat:Xxx" */
+    codesFav: false,
+    font: 100,
+    theme: "green"
   };
 
   var heroRun = 0;
   var heroTimer = null;
 
   /* ------------------------------------------------- STOCKAGE PERSISTANT --- */
-  var K = { favP: "tg_fav_projects", favS: "tg_fav_snippets", prog: "tg_progress", font: "tg_font" };
+  var K = {
+    favP: "tg_fav_projects", favS: "tg_fav_snippets", prog: "tg_progress",
+    font: "tg_font", notes: "tg_notes", theme: "tg_theme"
+  };
   var store = {
     get: function (k, def) {
       try { var v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); }
@@ -32,10 +41,12 @@
     },
     set: function (k, val) { try { localStorage.setItem(k, JSON.stringify(val)); } catch (e) {} }
   };
-  var favP = store.get(K.favP, {});   /* { projectId: 1 }            */
-  var favS = store.get(K.favS, {});   /* { snippetId: 1 }            */
-  var prog = store.get(K.prog, {});   /* { projectId: { stepIdx: 1 } } */
-  state.font = store.get(K.font, 100);
+  var favP  = store.get(K.favP, {});
+  var favS  = store.get(K.favS, {});
+  var prog  = store.get(K.prog, {});
+  var notes = store.get(K.notes, {});
+  state.font  = store.get(K.font, 100);
+  state.theme = store.get(K.theme, "green");
 
   /* ------------------------------------------------------------- ICÔNES --- */
   var ICON_COPY =
@@ -48,6 +59,10 @@
     '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 3.6l2.6 5.3 5.8.85-4.2 4.1 1 5.8-5.2-2.75-5.2 2.75 1-5.8L3.6 9.75l5.8-.85z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>';
   var ICON_STACK =
     '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>';
+  var ICON_SCRIPT =
+    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-2"/><path d="M9 9l3 3-3 3M14 15h4"/></svg>';
+  var ICON_CHEVRON =
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
 
   /* ------------------------------------------------------------ OUTILS --- */
   function $(id) { return document.getElementById(id); }
@@ -90,21 +105,44 @@
     return { projects: projects, commands: snippetItems + stepCmds };
   }
 
+  /* ------------------------------------------- COLORATION SYNTAXIQUE --- */
+  /* Travaille sur le texte ÉCHAPPÉ. replace() à callback ne re-scanne pas le
+     texte déjà remplacé : pas de double-coloration. La copie reste exacte car
+     .textContent ignore les balises et le « $ » (ajouté en CSS). */
+  function hlRest(s) {
+    var re = /(#[^\n]*$)|(&quot;[^&]*&quot;|&#39;[^&]*&#39;)|(https?:\/\/[^\s<]+)|(\$\{[^}]+\}|\$\w+)|(&amp;&amp;|\|\||\||&gt;&gt;|&gt;)|((?:^|\s)--?[A-Za-z][\w-]*)/g;
+    return s.replace(re, function (m, com, str, url, vr, op, opt) {
+      if (com) return '<span class="tok-com">' + com + "</span>";
+      if (str) return '<span class="tok-str">' + str + "</span>";
+      if (url) return '<span class="tok-url">' + url + "</span>";
+      if (vr)  return '<span class="tok-var">' + vr + "</span>";
+      if (op)  return '<span class="tok-op">' + op + "</span>";
+      if (opt) {
+        var lead = /^\s/.test(opt) ? opt.charAt(0) : "";
+        var word = lead ? opt.slice(1) : opt;
+        return lead + '<span class="tok-opt">' + word + "</span>";
+      }
+      return m;
+    });
+  }
+  function hlLine(line) {
+    var m = line.match(/^(\s*)(\S+)([\s\S]*)$/);
+    if (!m) return escapeHtml(line);
+    return m[1] + '<span class="tok-cmd">' + escapeHtml(m[2]) + "</span>" + hlRest(escapeHtml(m[3]));
+  }
+  function highlight(code) {
+    return codeToText(code).split("\n").map(hlLine).join("\n");
+  }
+
   /* ----------------------------------------------- FAVORIS & PROGRESSION --- */
   function sid(groupName, title) { return norm(groupName) + "|" + norm(title); }
 
   function isFavP(id) { return !!favP[id]; }
-  function toggleFavP(id) {
-    if (favP[id]) delete favP[id]; else favP[id] = 1;
-    store.set(K.favP, favP);
-  }
+  function toggleFavP(id) { if (favP[id]) delete favP[id]; else favP[id] = 1; store.set(K.favP, favP); }
   function favPCount() { return Object.keys(favP).length; }
 
   function isFavS(id) { return !!favS[id]; }
-  function toggleFavS(id) {
-    if (favS[id]) delete favS[id]; else favS[id] = 1;
-    store.set(K.favS, favS);
-  }
+  function toggleFavS(id) { if (favS[id]) delete favS[id]; else favS[id] = 1; store.set(K.favS, favS); }
   function favSCount() { return Object.keys(favS).length; }
 
   function stepCount(p) { return (p.steps || []).length; }
@@ -118,16 +156,35 @@
   }
   function resetProject(pid) { delete prog[pid]; store.set(K.prog, prog); }
 
+  function projComplete(p) { return stepCount(p) > 0 && projDone(p.id) >= stepCount(p); }
+  function globalProgress() {
+    var list = DATA.projects || [], done = 0;
+    list.forEach(function (p) { if (projComplete(p)) done++; });
+    return { done: done, total: list.length };
+  }
+  function nextProject() {
+    var list = DATA.projects || [];
+    for (var i = 0; i < list.length; i++) {
+      if (projDone(list[i].id) < stepCount(list[i])) return list[i];
+    }
+    return null;
+  }
+
+  function saveNote(pid, val) {
+    if (!pid) return;
+    if (val && val.trim()) notes[pid] = val; else delete notes[pid];
+    store.set(K.notes, notes);
+  }
+
   /* ------------------------------------------------ BLOC DE COMMANDE --- */
-  function cmdBlock(code, variant) {
-    var text = codeToText(code);
+  function cmdBlock(code) {
     return (
-      '<div class="cmd' + (variant ? " " + variant : "") + '">' +
+      '<div class="cmd">' +
         '<div class="cmd__top">' +
           '<div class="cmd__dots"><i></i><i></i><i></i></div>' +
           '<button class="cmd__copy" type="button">' + ICON_COPY + "<span>Copier</span></button>" +
         "</div>" +
-        '<pre class="cmd__code">' + escapeHtml(text) + "</pre>" +
+        '<pre class="cmd__code">' + highlight(code) + "</pre>" +
       "</div>"
     );
   }
@@ -141,10 +198,10 @@
     var total = stepCount(p);
     var pct = total ? Math.round((done / total) * 100) : 0;
     var progHtml = done > 0
-      ? '<div class="pcard__prog"><div class="pcard__bar"><i style="width:' + pct + '%"></i></div><span>' + done + "/" + total + "</span></div>"
+      ? '<div class="pcard__prog"><div class="pcard__bar"><i style="width:' + pct + '%"></i></div><span>' + (projComplete(p) ? "✓" : done + "/" + total) + "</span></div>"
       : "";
     return (
-      '<button class="pcard accent-' + p.accent + '" data-project="' + p.id + '">' +
+      '<button class="pcard accent-' + p.accent + (projComplete(p) ? " is-complete" : "") + '" data-project="' + p.id + '">' +
         starSpan(isFavP(p.id), 'data-fav-p="' + p.id + '"') +
         '<div class="pcard__icon">' + p.icon + "</div>" +
         '<div class="pcard__title">' + escapeHtml(p.title) + "</div>" +
@@ -166,6 +223,25 @@
   }
 
   /* ------------------------------------------------------------- VUES --- */
+  function homeProgress() {
+    var g = globalProgress();
+    var pct = g.total ? Math.round((g.done / g.total) * 100) : 0;
+    var next = nextProject();
+    var cta = next
+      ? '<button class="btn-primary btn-primary--sm" data-project="' + next.id + '">' +
+          (g.done > 0 ? "Continuer" : "Commencer") + " : " + escapeHtml(next.title) + " &rarr;</button>"
+      : '<div class="parcours__done">🎉 Tous les projets terminés. Bravo !</div>';
+    return (
+      '<div class="parcours">' +
+        '<div class="parcours__top"><span class="parcours__label">// ta progression</span>' +
+          '<span class="parcours__pct">' + pct + "%</span></div>" +
+        '<div class="parcours__track"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="parcours__meta">' + g.done + " / " + g.total + " projets terminés</div>" +
+        '<div class="parcours__cta">' + cta + "</div>" +
+      "</div>"
+    );
+  }
+
   function viewHome() {
     var c = counts();
     var popular = (DATA.projects || []).slice(0, 4).map(pcardHtml).join("");
@@ -189,8 +265,8 @@
             '<div class="stat"><div class="stat__n">' + c.commands + '</div><div class="stat__l">commandes prêtes</div></div>' +
             '<div class="stat"><div class="stat__n">100%</div><div class="stat__l">hors-ligne</div></div>' +
           "</div>" +
-          '<div class="cta-row"><button class="btn-primary" data-goto="projects">Explorer les projets &rarr;</button></div>' +
         "</div>" +
+        homeProgress() +
         '<div class="section">' +
           '<p class="eyebrow">pour commencer</p>' +
           '<h2 class="section-title">Projets populaires</h2>' +
@@ -204,22 +280,27 @@
 
   function projFilterBar() {
     var n = favPCount();
-    return (
-      '<div class="chips">' +
-        '<button class="chip' + (state.projFilter === "all" ? " is-on" : "") + '" data-filter="all">Tous</button>' +
-        '<button class="chip' + (state.projFilter === "fav" ? " is-on" : "") + '" data-filter="fav">' +
-          '<span class="chip__star">' + ICON_STAR + '</span>Favoris <i class="chip__n" id="favPN">' + n + "</i>" +
-        "</button>" +
-      "</div>"
-    );
+    var chips =
+      '<button class="chip' + (state.projFilter === "all" ? " is-on" : "") + '" data-filter="all">Tous</button>' +
+      '<button class="chip' + (state.projFilter === "fav" ? " is-on" : "") + '" data-filter="fav">' +
+        '<span class="chip__star">' + ICON_STAR + '</span>Favoris <i class="chip__n" id="favPN">' + n + "</i>" +
+      "</button>";
+    CAT_ORDER.forEach(function (c) {
+      chips += '<button class="chip' + (state.projFilter === "cat:" + c ? " is-on" : "") + '" data-filter="cat:' + c + '">' + escapeHtml(c) + "</button>";
+    });
+    return '<div class="chips chips--scroll">' + chips + "</div>";
   }
 
   function viewProjects() {
     var list = DATA.projects || [];
-    if (state.projFilter === "fav") list = list.filter(function (p) { return isFavP(p.id); });
+    var f = state.projFilter;
+    if (f === "fav") list = list.filter(function (p) { return isFavP(p.id); });
+    else if (f.indexOf("cat:") === 0) { var c = f.slice(4); list = list.filter(function (p) { return p.cat === c; }); }
+
     var grid = list.length
       ? '<div class="grid stagger">' + list.map(pcardHtml).join("") + "</div>"
-      : '<div class="empty">Aucun favori pour l\'instant.<br/><span>Touche l\'étoile d\'un projet pour l\'épingler ici.</span></div>';
+      : '<div class="empty">Rien ici pour l\'instant.<br/><span>' +
+          (f === "fav" ? "Touche l\'étoile d\'un projet pour l\'épingler." : "Essaie un autre filtre.") + "</span></div>";
     return (
       '<section class="view">' +
         '<p class="eyebrow">projets</p>' +
@@ -264,9 +345,20 @@
         "</div>" +
       "</div>";
 
-    var copyAll = hasCmd
-      ? '<button class="copyall" type="button" data-copyall>' + ICON_STACK + "<span>Copier toutes les commandes</span></button>"
+    var actions = hasCmd
+      ? '<div class="detail-actions">' +
+          '<button class="copyall" type="button" data-copyall>' + ICON_STACK + "<span>Tout copier</span></button>" +
+          '<button class="copyall copyall--ghost" type="button" data-script>' + ICON_SCRIPT + "<span>Exporter .sh</span></button>" +
+        "</div>"
       : "";
+
+    var noteBox =
+      '<div class="pnote">' +
+        '<div class="pnote__label">📝 Mes notes</div>' +
+        '<textarea class="pnote__area" data-note rows="3" placeholder="Tes remarques sur ce projet (enregistré automatiquement)…">' +
+          escapeHtml(notes[p.id] || "") +
+        "</textarea>" +
+      "</div>";
 
     return (
       '<section class="view accent-' + p.accent + '">' +
@@ -277,15 +369,17 @@
             '<div class="detail-head__meta">' +
               '<span class="badge">' + escapeHtml(p.level) + "</span>" +
               '<span class="badge badge--time">' + escapeHtml(p.time) + "</span>" +
+              (p.cat ? '<span class="badge badge--cat">' + escapeHtml(p.cat) + "</span>" : "") +
               '<span class="favtoggle' + (isFavP(p.id) ? " is-fav" : "") + '" data-fav-p="' + p.id + '" role="button">' + ICON_STAR + "<i>Favori</i></span>" +
             "</div>" +
           "</div>" +
         "</div>" +
         (p.intro ? '<div class="intro-card">' + escapeHtml(p.intro) + "</div>" : "") +
         progBlock +
-        copyAll +
+        actions +
         '<div class="steps stagger">' + steps + "</div>" +
         (p.note ? noteHtml(p.note) : "") +
+        noteBox +
       "</section>"
     );
   }
@@ -319,7 +413,6 @@
     }).join("");
   }
 
-  /* Filtre par texte + option « favoris seulement ». */
   function buildGroups(q, favOnly) {
     var out = [];
     (DATA.snippetGroups || []).forEach(function (g) {
@@ -380,7 +473,6 @@
 
   /* ---------------------------------------------------- ONGLET AIDE --- */
   function linkBlock(value, kind) {
-    /* kind "url" : pas de préfixe « $ ». kind "cmd" : bloc terminal normal. */
     if (kind === "cmd") return cmdBlock(value);
     return (
       '<div class="cmd cmd--link">' +
@@ -406,6 +498,16 @@
       );
     }).join("");
 
+    var gloss = (DATA.glossary || []).map(function (g, i) {
+      return (
+        '<div class="gloss" data-gloss="' + i + '">' +
+          '<button class="gloss__q" type="button"><span>' + escapeHtml(g.term) + "</span>" +
+            '<span class="gloss__chev">' + ICON_CHEVRON + "</span></button>" +
+          '<div class="gloss__a">' + escapeHtml(g.def) + "</div>" +
+        "</div>"
+      );
+    }).join("");
+
     var res = (DATA.resources || []).map(function (r) {
       return (
         '<div class="rcard accent-' + r.accent + '">' +
@@ -420,29 +522,59 @@
       );
     }).join("");
 
+    var themes = [["green", "Vert"], ["cyan", "Cyan"], ["violet", "Violet"], ["amber", "Ambre"]];
+    var themeBtns = themes.map(function (t) {
+      return '<button class="themebtn theme-' + t[0] + (state.theme === t[0] ? " is-on" : "") + '" data-theme="' + t[0] + '"><span class="themebtn__dot"></span>' + t[1] + "</button>";
+    }).join("");
+
     var scales = [[88, "Petit"], [100, "Normal"], [115, "Grand"], [132, "Très grand"]];
     var fontBtns = scales.map(function (s) {
       return '<button class="fontbtn' + (state.font === s[0] ? " is-on" : "") + '" data-font="' + s[0] + '">' + s[1] + "</button>";
     }).join("");
 
+    var about =
+      '<div class="about">' +
+        '<div class="about__row"><span>Termux Guide</span><span class="about__v">v' + APP_VERSION + "</span></div>" +
+        '<div class="about__new">Nouveautés : coloration syntaxique, thème de couleur, favoris &amp; progression, recherche globale, glossaire, notes par projet, export de script .sh, sauvegarde — et de nouveaux projets (rclone, ffmpeg, tmux, fastfetch, vim, sqlite, jeux…).</div>' +
+        '<div class="about__sig">// hors-ligne · sans pub · sans pistage</div>' +
+      "</div>";
+
     return (
       '<section class="view accent-cyan">' +
         '<p class="eyebrow">aide</p>' +
-        '<h2 class="section-title">Aide &amp; dépannage</h2>' +
-        '<p class="section-sub">Les erreurs courantes, des ressources utiles et l\'affichage.</p>' +
+        '<h2 class="section-title">Aide &amp; réglages</h2>' +
+        '<p class="section-sub">Dépannage, lexique, apparence et sauvegarde.</p>' +
 
         '<h3 class="subhead">// erreurs fréquentes</h3>' +
         '<div class="stagger">' + trouble + "</div>" +
 
+        '<h3 class="subhead">// glossaire</h3>' +
+        '<div class="glosslist">' + gloss + "</div>" +
+
         '<h3 class="subhead">// ressources</h3>' +
         '<div class="stagger">' + res + "</div>" +
 
-        '<h3 class="subhead">// affichage</h3>' +
+        '<h3 class="subhead">// thème de couleur</h3>' +
+        '<div class="themeset">' + themeBtns + "</div>" +
+
+        '<h3 class="subhead">// taille du texte</h3>' +
         '<div class="fontcard">' +
-          '<div class="fontcard__label">Taille du texte</div>' +
           '<div class="fontset">' + fontBtns + "</div>" +
           '<div class="fontcard__preview">$ pkg install python — aperçu de la taille</div>' +
         "</div>" +
+
+        '<h3 class="subhead">// sauvegarde</h3>' +
+        '<div class="backup">' +
+          '<div class="backup__lead">Copie ce texte pour sauvegarder tes favoris, ta progression et tes notes :</div>' +
+          '<textarea class="backup__box" id="exportBox" readonly rows="3">' + escapeHtml(exportData()) + "</textarea>" +
+          '<button class="backup__btn" type="button" data-copyexport>' + ICON_COPY + "<span>Copier la sauvegarde</span></button>" +
+          '<div class="backup__lead">Pour restaurer, colle une sauvegarde ici puis valide :</div>' +
+          '<textarea class="backup__box" id="importBox" rows="3" placeholder="Colle ta sauvegarde ici…"></textarea>' +
+          '<button class="backup__btn backup__btn--accent" type="button" data-import><span>Restaurer</span></button>' +
+        "</div>" +
+
+        '<h3 class="subhead">// à propos</h3>' +
+        about +
       "</section>"
     );
   }
@@ -468,7 +600,7 @@
     var html = "";
 
     var projs = (DATA.projects || []).filter(function (p) {
-      var hay = norm(p.title + " " + p.tag + " " + (p.intro || "") + " " + p.level);
+      var hay = norm(p.title + " " + p.tag + " " + (p.intro || "") + " " + p.level + " " + (p.cat || ""));
       return hay.indexOf(q) !== -1;
     });
     if (projs.length) {
@@ -514,8 +646,7 @@
     if (!lines.length) return;
 
     var myRun = heroRun;
-    var reduce =
-      window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     var printed = [];
     var idx = 0;
@@ -578,7 +709,17 @@
     else bar.classList.remove("show-back");
   }
 
-  /* ----------------------------------------------- TAILLE DU TEXTE --- */
+  /* ------------------------------------------------- THÈME & TAILLE --- */
+  function applyTheme(name) {
+    state.theme = name;
+    store.set(K.theme, name);
+    try { document.documentElement.style.setProperty("--brand", "var(--" + name + ")"); } catch (e) {}
+    var btns = document.querySelectorAll(".themebtn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("is-on", btns[i].getAttribute("data-theme") === name);
+    }
+  }
+
   function hasNativeFont() {
     return !!(window.Android && typeof window.Android.setFontScale === "function");
   }
@@ -590,16 +731,33 @@
     if (!native) { var a = $("app"); if (a) a.style.zoom = scale / 100; }
     var btns = document.querySelectorAll(".fontbtn");
     for (var i = 0; i < btns.length; i++) {
-      var on = parseInt(btns[i].getAttribute("data-font"), 10) === scale;
-      btns[i].classList.toggle("is-on", on);
+      btns[i].classList.toggle("is-on", parseInt(btns[i].getAttribute("data-font"), 10) === scale);
     }
   }
-  /* Le zoom natif (setTextZoom) persiste sur la WebView ; le repli CSS doit être
-     ré-appliqué à chaque rendu car #app est recréé. */
   function reapplyFont() {
     if (hasNativeFont()) return;
     var a = $("app");
     if (a) a.style.zoom = state.font / 100;
+  }
+
+  /* ----------------------------------------------- SAUVEGARDE / RESTAURE --- */
+  function exportData() {
+    return JSON.stringify({
+      v: 2, fav_projects: favP, fav_snippets: favS,
+      progress: prog, notes: notes, font: state.font, theme: state.theme
+    });
+  }
+  function importData(str) {
+    var o = JSON.parse(str);
+    if (o.fav_projects && typeof o.fav_projects === "object") { favP = o.fav_projects; store.set(K.favP, favP); }
+    if (o.fav_snippets && typeof o.fav_snippets === "object") { favS = o.fav_snippets; store.set(K.favS, favS); }
+    if (o.progress && typeof o.progress === "object") { prog = o.progress; store.set(K.prog, prog); }
+    if (o.notes && typeof o.notes === "object") { notes = o.notes; store.set(K.notes, notes); }
+    if (typeof o.font === "number") { state.font = o.font; store.set(K.font, o.font); }
+    if (typeof o.theme === "string") { state.theme = o.theme; store.set(K.theme, o.theme); }
+    applyTheme(state.theme);
+    render();
+    applyFont(state.font);
   }
 
   /* --------------------------------------------------------- NAVIGATION --- */
@@ -669,6 +827,8 @@
   };
 
   /* ------------------------------------------------------------- COPIE --- */
+  function buzz() { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} }
+
   function copyText(text) {
     var done = false;
     try {
@@ -694,6 +854,7 @@
         document.body.removeChild(ta);
       } catch (e) {}
     }
+    buzz();
   }
 
   function flashCopied(btn, label) {
@@ -724,6 +885,36 @@
     flashCopied(btn, "Tout copié");
   }
 
+  function handleScript(btn) {
+    var p = findProject(state.project);
+    if (!p) return;
+    var lines = ["#!/data/data/com.termux/files/usr/bin/bash", "# " + p.title, ""];
+    (p.steps || []).forEach(function (s) {
+      lines.push("# " + s.title);
+      if (s.code) lines.push(codeToText(s.code));
+      lines.push("");
+    });
+    copyText(lines.join("\n"));
+    flashCopied(btn, "Script copié");
+  }
+
+  function handleCopyExport(btn) {
+    var t = $("exportBox");
+    if (t) { copyText(t.value); flashCopied(btn, "Copié"); }
+  }
+
+  function handleImport(btn) {
+    var t = $("importBox");
+    if (!t) return;
+    var v = (t.value || "").trim();
+    if (!v) { flashCopied(btn, "Colle d'abord"); return; }
+    try { importData(v); }
+    catch (e) {
+      try { if (window.Android && window.Android.toast) window.Android.toast("Sauvegarde invalide"); } catch (e2) {}
+      flashCopied(btn, "Invalide");
+    }
+  }
+
   /* ------------------------------------------------- FAVORIS (CLICS) --- */
   function updateFavChips() {
     var a = $("favPN"); if (a) a.textContent = favPCount();
@@ -734,11 +925,9 @@
     var id = el.getAttribute("data-fav-p");
     toggleFavP(id);
     var nowFav = isFavP(id);
-    /* Met à jour toutes les étoiles de ce projet visibles. */
     var marks = document.querySelectorAll('[data-fav-p="' + id + '"]');
     for (var i = 0; i < marks.length; i++) marks[i].classList.toggle("is-fav", nowFav);
     updateFavChips();
-    /* En mode « Favoris » de l'onglet Projets, on retire la carte décochée. */
     if (state.tab === "projects" && state.projFilter === "fav" && !state.project && !nowFav) {
       var card = el.closest(".pcard");
       if (card) card.remove();
@@ -778,6 +967,8 @@
     var txt = $("progText"); if (txt) txt.textContent = done + " / " + total + " étapes";
   }
 
+  function handleGloss(el) { el.classList.toggle("is-open"); }
+
   /* ------------------------------------------------------- RECHERCHE --- */
   function bindSearch() {
     var input = $("codeSearch");
@@ -806,6 +997,15 @@
       var copyAll = e.target.closest("[data-copyall]");
       if (copyAll) { handleCopyAll(copyAll); return; }
 
+      var scriptBtn = e.target.closest("[data-script]");
+      if (scriptBtn) { handleScript(scriptBtn); return; }
+
+      var copyExp = e.target.closest("[data-copyexport]");
+      if (copyExp) { handleCopyExport(copyExp); return; }
+
+      var importBtn = e.target.closest("[data-import]");
+      if (importBtn) { handleImport(importBtn); return; }
+
       var copyBtn = e.target.closest(".cmd__copy");
       if (copyBtn) { handleCopy(copyBtn); return; }
 
@@ -818,10 +1018,13 @@
       var step = e.target.closest("[data-step]");
       if (step) { handleStep(step); return; }
 
+      var gloss = e.target.closest("[data-gloss]");
+      if (gloss) { handleGloss(gloss); return; }
+
       var reset = e.target.closest("[data-reset]");
       if (reset) {
-        var p = findProject(state.project);
-        if (p) { resetProject(p.id); render(); }
+        var pr = findProject(state.project);
+        if (pr) { resetProject(pr.id); render(); }
         return;
       }
 
@@ -831,6 +1034,9 @@
       var codesFav = e.target.closest("[data-codesfav]");
       if (codesFav) { state.codesFav = !state.codesFav; render(); return; }
 
+      var theme = e.target.closest("[data-theme]");
+      if (theme) { applyTheme(theme.getAttribute("data-theme")); return; }
+
       var font = e.target.closest("[data-font]");
       if (font) { applyFont(parseInt(font.getAttribute("data-font"), 10)); return; }
 
@@ -839,6 +1045,12 @@
 
       var goto = e.target.closest("[data-goto]");
       if (goto) { switchTab(goto.getAttribute("data-goto")); return; }
+    });
+
+    /* Notes perso : enregistrées à la frappe. */
+    $("app").addEventListener("input", function (e) {
+      var n = e.target.closest("[data-note]");
+      if (n) saveNote(state.project, n.value);
     });
 
     $("tabbar").addEventListener("click", function (e) {
@@ -851,6 +1063,7 @@
     var sb = $("searchBtn");
     if (sb) sb.addEventListener("click", function () { openSearch(); });
 
+    applyTheme(state.theme);
     render();
     applyFont(state.font);
   }

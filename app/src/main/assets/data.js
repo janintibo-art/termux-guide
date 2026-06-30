@@ -19,6 +19,7 @@ window.DATA = {
   projects: [
     {
       id: "premiers-pas",
+      cat: "Bases",
       accent: "green",
       icon: "🚀",
       title: "Premiers pas",
@@ -37,6 +38,7 @@ window.DATA = {
 
     {
       id: "linux",
+      cat: "Système",
       accent: "violet",
       icon: "🐧",
       title: "Installer Linux",
@@ -56,6 +58,7 @@ window.DATA = {
 
     {
       id: "reseau",
+      cat: "Réseau",
       accent: "cyan",
       icon: "📡",
       title: "Réseau & Wi-Fi",
@@ -75,6 +78,7 @@ window.DATA = {
 
     {
       id: "github",
+      cat: "Dev",
       accent: "green",
       icon: "🐙",
       title: "Envoyer sur GitHub",
@@ -94,6 +98,7 @@ window.DATA = {
 
     {
       id: "serveur-web",
+      cat: "Réseau",
       accent: "amber",
       icon: "🌐",
       title: "Serveur web local",
@@ -112,6 +117,7 @@ window.DATA = {
 
     {
       id: "ssh",
+      cat: "Réseau",
       accent: "cyan",
       icon: "🔐",
       title: "Connexion SSH",
@@ -131,6 +137,7 @@ window.DATA = {
 
     {
       id: "medias",
+      cat: "Média",
       accent: "amber",
       icon: "🎬",
       title: "Télécharger des médias",
@@ -149,6 +156,7 @@ window.DATA = {
 
     {
       id: "controle-tel",
+      cat: "Système",
       accent: "violet",
       icon: "📱",
       title: "Contrôler le téléphone",
@@ -168,6 +176,7 @@ window.DATA = {
 
     {
       id: "personnaliser",
+      cat: "Système",
       accent: "green",
       icon: "🎨",
       title: "Personnaliser le terminal",
@@ -186,6 +195,7 @@ window.DATA = {
 
     {
       id: "python",
+      cat: "Dev",
       accent: "amber",
       icon: "🐍",
       title: "Créer un script Python",
@@ -205,6 +215,7 @@ window.DATA = {
 
     {
       id: "automatisation",
+      cat: "Système",
       accent: "violet",
       icon: "⏰",
       title: "Automatiser des tâches",
@@ -223,6 +234,7 @@ window.DATA = {
 
     {
       id: "bot-telegram",
+      cat: "Dev",
       accent: "cyan",
       icon: "🤖",
       title: "Créer un bot Telegram",
@@ -242,6 +254,7 @@ window.DATA = {
 
     {
       id: "nodejs",
+      cat: "Dev",
       accent: "green",
       icon: "🟢",
       title: "JavaScript avec Node.js",
@@ -262,6 +275,7 @@ window.DATA = {
 
     {
       id: "images",
+      cat: "Média",
       accent: "amber",
       icon: "🖼️",
       title: "Retoucher des images",
@@ -281,6 +295,7 @@ window.DATA = {
 
     {
       id: "qrcode",
+      cat: "Média",
       accent: "violet",
       icon: "🔳",
       title: "Générer des QR codes",
@@ -299,6 +314,7 @@ window.DATA = {
 
     {
       id: "fun",
+      cat: "Fun",
       accent: "red",
       icon: "🎉",
       title: "S'amuser dans le terminal",
@@ -317,6 +333,7 @@ window.DATA = {
 
     {
       id: "cloud",
+      cat: "Outils",
       accent: "cyan",
       icon: "☁️",
       title: "Synchroniser le cloud",
@@ -336,6 +353,7 @@ window.DATA = {
 
     {
       id: "qrcp",
+      cat: "Outils",
       accent: "violet",
       icon: "📲",
       title: "Transférer via QR code",
@@ -354,6 +372,7 @@ window.DATA = {
 
     {
       id: "ffmpeg",
+      cat: "Média",
       accent: "amber",
       icon: "🎬",
       title: "Audio & vidéo (ffmpeg)",
@@ -373,6 +392,7 @@ window.DATA = {
 
     {
       id: "tunnel",
+      cat: "Réseau",
       accent: "green",
       icon: "🌐",
       title: "Exposer un serveur (tunnel)",
@@ -391,6 +411,7 @@ window.DATA = {
 
     {
       id: "tmux",
+      cat: "Système",
       accent: "violet",
       icon: "🖥️",
       title: "Multi-fenêtres (tmux)",
@@ -406,6 +427,166 @@ window.DATA = {
         { title: "Reprendre la session", desc: "Te rattache à la session laissée en cours.", code: "tmux attach" }
       ],
       note: "Lister les sessions ouvertes : tmux ls. Combiné avec « Acquire wakelock », un script peut tourner écran éteint."
+    },
+
+    {
+      id: "fastfetch",
+      cat: "Système",
+      accent: "cyan",
+      icon: "🖼️",
+      title: "Fiche système (fastfetch)",
+      tag: "infos + logo ASCII",
+      level: "Facile",
+      time: "5 min",
+      intro: "fastfetch affiche un résumé stylé de ton système (OS, paquets, mémoire, uptime…) à côté d'un logo en ASCII. C'est LE classique des belles captures de terminal.",
+      steps: [
+        { title: "Installer fastfetch", desc: "L'outil de fiche système.", code: "pkg install fastfetch -y" },
+        { title: "Afficher la fiche", desc: "Lance fastfetch : logo + infos s'affichent.", code: "fastfetch" },
+        { title: "Version compacte", desc: "Un logo plus petit, pratique sur petit écran.", code: "fastfetch --logo small" },
+        { title: "L'afficher à chaque ouverture", desc: "Ajoute la commande à ton .bashrc : elle se lancera à chaque nouvelle session.", code: "echo fastfetch >> ~/.bashrc" }
+      ],
+      note: "Alternative plus ancienne et tout aussi connue : neofetch (pkg install neofetch)."
+    },
+
+    {
+      id: "cli-moderne",
+      cat: "Outils",
+      accent: "green",
+      icon: "⚡",
+      title: "Le trio CLI moderne",
+      tag: "fzf · bat · eza",
+      level: "Intermédiaire",
+      time: "10 min",
+      intro: "Trois outils qui dépoussièrent les classiques : fzf (recherche floue instantanée), bat (un cat coloré avec numéros de ligne) et eza (un ls moderne, coloré, avec icônes).",
+      steps: [
+        { title: "Installer les trois", desc: "Une seule commande pour tout le pack.", code: "pkg install fzf bat eza -y" },
+        { title: "Sélection floue d'un fichier", desc: "fzf filtre une liste au fur et à mesure que tu tapes.", code: "ls | fzf" },
+        { title: "Afficher un fichier en couleur", desc: "bat colore le contenu et numérote les lignes.", code: "bat notes.txt" },
+        { title: "Lister un dossier en mieux", desc: "eza remplace ls, avec couleurs et icônes.", code: "eza -la --icons" },
+        { title: "Créer un alias pratique", desc: "Remplace ls par eza en permanence (au prochain démarrage).", code: "echo \"alias ls='eza --icons'\" >> ~/.bashrc" }
+      ],
+      note: "eza est le successeur de exa (qui n'est plus maintenu). Combine fzf avec d'autres commandes : par ex. cd \"$(find . -type d | fzf)\"."
+    },
+
+    {
+      id: "monitoring",
+      cat: "Système",
+      accent: "amber",
+      icon: "📊",
+      title: "Surveiller le système",
+      tag: "htop · ncdu",
+      level: "Facile",
+      time: "5 min",
+      intro: "Deux outils visuels indispensables : htop pour voir les processus et la charge en temps réel, ncdu pour explorer ce qui occupe ton espace disque.",
+      steps: [
+        { title: "Installer les outils", desc: "htop et ncdu d'un coup.", code: "pkg install htop ncdu -y" },
+        { title: "Voir les processus", desc: "Affichage temps réel de la mémoire et du CPU. Tape q pour quitter.", code: "htop" },
+        { title: "Analyser l'espace disque", desc: "Explore les dossiers par taille. Navigue aux flèches.", code: "ncdu" },
+        { title: "Analyser le stockage du téléphone", desc: "Repère les gros fichiers dans la mémoire partagée.", code: "ncdu ~/storage/shared" }
+      ],
+      note: "Dans htop : F6 pour trier, F9 pour arrêter un processus. Dans ncdu : d supprime l'élément sélectionné (prudence)."
+    },
+
+    {
+      id: "chiffrement",
+      cat: "Outils",
+      accent: "violet",
+      icon: "🔐",
+      title: "Chiffrer des fichiers",
+      tag: "gpg · openssl",
+      level: "Intermédiaire",
+      time: "10 min",
+      intro: "Protège un fichier sensible par mot de passe avant de l'envoyer ou de l'archiver. gpg et openssl chiffrent en symétrique : un simple mot de passe suffit à protéger et à ouvrir.",
+      steps: [
+        { title: "Installer gnupg", desc: "Fournit la commande gpg.", code: "pkg install gnupg -y" },
+        { title: "Chiffrer un fichier", desc: "Demande un mot de passe et crée secret.txt.gpg.", code: "gpg -c secret.txt" },
+        { title: "Déchiffrer", desc: "Redemande le mot de passe et restaure le fichier.", code: "gpg secret.txt.gpg" },
+        { title: "Variante avec openssl", desc: "Chiffrement AES-256, déjà inclus dans Termux.", code: "openssl enc -aes-256-cbc -salt -in f.txt -out f.enc" },
+        { title: "Déchiffrer (openssl)", desc: "L'option -d signifie « decrypt ».", code: "openssl enc -d -aes-256-cbc -in f.enc -out f.txt" }
+      ],
+      note: "Sans le mot de passe, un fichier chiffré est irrécupérable : note-le en lieu sûr. Pense à supprimer l'original en clair une fois le chiffrement vérifié."
+    },
+
+    {
+      id: "sqlite",
+      cat: "Dev",
+      accent: "cyan",
+      icon: "🗃️",
+      title: "Base de données (SQLite)",
+      tag: "créer & interroger en SQL",
+      level: "Intermédiaire",
+      time: "15 min",
+      intro: "SQLite est une vraie base de données contenue dans un seul fichier, sans serveur à lancer. Idéale pour apprendre le SQL directement dans Termux.",
+      steps: [
+        { title: "Installer SQLite", desc: "Fournit la commande sqlite3.", code: "pkg install sqlite -y" },
+        { title: "Créer / ouvrir une base", desc: "Crée le fichier s'il n'existe pas et ouvre l'invite SQLite.", code: "sqlite3 ma_base.db" },
+        { title: "Créer une table", desc: "À taper dans l'invite sqlite>. Définit une table « notes ».", code: "CREATE TABLE notes(id INTEGER PRIMARY KEY, texte TEXT);" },
+        { title: "Ajouter des données", desc: "Insère une ligne dans la table.", code: "INSERT INTO notes(texte) VALUES('Ma première note');" },
+        { title: "Lire les données", desc: "Affiche tout le contenu de la table.", code: "SELECT * FROM notes;" },
+        { title: "Quitter", desc: "Ferme l'invite SQLite.", code: ".quit" }
+      ],
+      note: "Les commandes qui commencent par un point (.tables, .schema, .quit) sont propres à SQLite ; le reste est du SQL standard, valable partout."
+    },
+
+    {
+      id: "github-pages",
+      cat: "Dev",
+      accent: "green",
+      icon: "🌍",
+      title: "Site sur GitHub Pages",
+      tag: "publier une page gratuitement",
+      level: "Intermédiaire",
+      time: "15 min",
+      intro: "GitHub Pages héberge gratuitement un site statique. Tu crées une page, tu la pousses sur GitHub, et elle est en ligne à l'adresse ton-pseudo.github.io. (Prérequis : le projet « Envoyer sur GitHub ».)",
+      steps: [
+        { title: "Créer le dossier du site", desc: "Un dossier dédié à ta page.", code: "mkdir mon-site && cd mon-site" },
+        { title: "Créer la page d'accueil", desc: "GitHub Pages sert le fichier index.html.", code: "echo '<h1>Mon site fait depuis Termux</h1>' > index.html" },
+        { title: "Préparer le dépôt Git", desc: "Initialise, ajoute et valide.", code: ["git init -b main", "git add . && git commit -m \"Mon site\""] },
+        { title: "Créer le dépôt en ligne", desc: "Avec GitHub CLI (gh auth login au préalable).", code: "gh repo create mon-site --public --source=. --push" },
+        { title: "Activer GitHub Pages", desc: "Sur GitHub : Settings → Pages → Branch « main » → Save. En ligne sous 1-2 min.", code: null }
+      ],
+      note: "Adresse finale : https://TON_PSEUDO.github.io/mon-site/. Chaque git push met le site à jour automatiquement."
+    },
+
+    {
+      id: "jeux",
+      cat: "Fun",
+      accent: "red",
+      icon: "🎮",
+      title: "Jouer dans le terminal",
+      tag: "snake, tetris, sudoku…",
+      level: "Facile",
+      time: "5 min",
+      intro: "Oui, on peut jouer dans un terminal ! Voici quelques classiques en mode texte qui tournent directement dans Termux.",
+      steps: [
+        { title: "Voir les jeux disponibles", desc: "Liste les paquets de jeux installables.", code: "pkg search game" },
+        { title: "Le serpent", desc: "Le Snake en plein terminal.", code: "pkg install nsnake -y && nsnake" },
+        { title: "Le Tetris", desc: "Bastet, un Tetris (un brin sadique).", code: "pkg install bastet -y && bastet" },
+        { title: "Space Invaders", desc: "Le grand classique de l'arcade.", code: "pkg install ninvaders -y && ninvaders" },
+        { title: "Le Sudoku", desc: "Pour les amateurs de logique.", code: "pkg install nudoku -y && nudoku" }
+      ],
+      note: "Une dizaine d'autres jeux sont regroupés dans bsdgames (pkg install bsdgames). La touche q quitte la plupart des jeux."
+    },
+
+    {
+      id: "vim",
+      cat: "Dev",
+      accent: "violet",
+      icon: "⌨️",
+      title: "L'éditeur Vim",
+      tag: "s'initier à Vim / Neovim",
+      level: "Intermédiaire",
+      time: "15 min",
+      intro: "Vim est l'éditeur des pros : tout au clavier, ultra-rapide une fois pris en main. Voici de quoi survivre à tes premières minutes sans paniquer.",
+      steps: [
+        { title: "Installer Neovim", desc: "La version modernisée de Vim.", code: "pkg install neovim -y" },
+        { title: "Ouvrir un fichier", desc: "Crée ou ouvre notes.txt.", code: "nvim notes.txt" },
+        { title: "Écrire du texte", desc: "Appuie sur i pour passer en mode Insertion, puis tape normalement.", code: null },
+        { title: "Sortir du mode écriture", desc: "Appuie sur Échap (Volume Haut + Q affiche la touche Échap au besoin).", code: null },
+        { title: "Enregistrer et quitter", desc: "Tape :wq puis Entrée. Pour quitter SANS enregistrer : :q!", code: null },
+        { title: "Mémo de survie", desc: "i = écrire · Échap = sortir · :w = enregistrer · :q = quitter · dd = couper une ligne", code: null }
+      ],
+      note: "Le Vim classique s'installe avec pkg install vim. Pour apprendre en jouant, la commande vimtutor est un tutoriel interactif intégré."
     }
   ],
 
@@ -553,6 +734,31 @@ window.DATA = {
         { title: "Traduire vers l'anglais", desc: "Traduit vers l'anglais.", code: "trans :en \"bonjour le monde\"" },
         { title: "Version courte", desc: "L'option -b n'affiche que la traduction, sans détails.", code: "trans -b :es \"merci beaucoup\"" }
       ]
+    },
+
+    {
+      name: "Système & monitoring",
+      accent: "amber",
+      items: [
+        { title: "Fiche système stylée", desc: "Infos + logo ASCII (pkg install fastfetch).", code: "fastfetch" },
+        { title: "Processus en temps réel", desc: "Moniteur interactif (pkg install htop). q pour quitter.", code: "htop" },
+        { title: "Qui occupe le disque ?", desc: "Explorateur d'espace disque (pkg install ncdu).", code: "ncdu" },
+        { title: "Mémoire disponible", desc: "Affiche la RAM utilisée et libre.", code: "free -h" },
+        { title: "Espace de stockage", desc: "Place disponible par système de fichiers.", code: "df -h" },
+        { title: "Depuis quand ça tourne", desc: "Temps de fonctionnement et charge.", code: "uptime" }
+      ]
+    },
+
+    {
+      name: "Sécurité & chiffrement",
+      accent: "violet",
+      items: [
+        { title: "Chiffrer par mot de passe", desc: "Crée un .gpg protégé (pkg install gnupg).", code: "gpg -c fichier.txt" },
+        { title: "Déchiffrer", desc: "Restaure un fichier .gpg.", code: "gpg fichier.txt.gpg" },
+        { title: "Chiffrer avec openssl", desc: "AES-256, inclus dans Termux.", code: "openssl enc -aes-256-cbc -salt -in f.txt -out f.enc" },
+        { title: "Empreinte d'un fichier", desc: "Vérifie l'intégrité (somme SHA-256).", code: "sha256sum fichier.zip" },
+        { title: "Générer un mot de passe", desc: "Une chaîne aléatoire de 16 caractères.", code: "openssl rand -base64 16" }
+      ]
     }
   ],
 
@@ -637,5 +843,27 @@ window.DATA = {
     { icon: "🔎", accent: "amber",  name: "explainshell.com", desc: "Colle une commande, il t'explique chaque morceau.", value: "https://explainshell.com", kind: "url" },
     { icon: "📝", accent: "green",  name: "tldr — exemples express", desc: "Des exemples concrets pour chaque commande, dans le terminal.", value: "pkg install tldr -y", kind: "cmd" },
     { icon: "⚡", accent: "cyan",   name: "cheat.sh — antisèche", desc: "Une fiche pour n'importe quelle commande, sans rien installer.", value: "curl cheat.sh/tar", kind: "cmd" }
+  ],
+
+  /* ---------------------------------------------------------- GLOSSAIRE */
+  glossary: [
+    { term: "Paquet (package)", def: "Un logiciel prêt à installer via pkg. Exemple : « pkg install git » installe le paquet git." },
+    { term: "pkg", def: "Le gestionnaire de paquets de Termux : il installe, met à jour et supprime des logiciels (pkg install / upgrade / uninstall)." },
+    { term: "Dépôt (repository)", def: "Un serveur qui héberge des paquets. Sur GitHub, un « repo » désigne plutôt ton projet de code." },
+    { term: "$PATH", def: "La liste des dossiers où le système cherche les commandes. Si une commande est « not found », elle n'est pas dans le PATH." },
+    { term: "Shell", def: "Le programme qui interprète tes commandes. Termux utilise bash par défaut." },
+    { term: "bash", def: "Le shell le plus courant, et le langage des scripts .sh." },
+    { term: "chmod", def: "Change les permissions d'un fichier. « chmod +x script.sh » le rend exécutable." },
+    { term: "root", def: "Le super-utilisateur tout-puissant. Termux fonctionne SANS root, pour ta sécurité et sans bidouille." },
+    { term: "sudo", def: "Exécute une commande en administrateur. Inutile (et généralement absent) dans Termux, qui n'utilise pas root." },
+    { term: "proot", def: "Une astuce qui simule l'environnement root pour faire tourner une distribution Linux sans vraies permissions root." },
+    { term: "Pipe ( | )", def: "Envoie la sortie d'une commande dans l'entrée d'une autre. Exemple : « ls | grep txt »." },
+    { term: "Redirection ( > >> )", def: "Écrit la sortie dans un fichier. « > » écrase le fichier, « >> » ajoute à la fin." },
+    { term: "Variable d'environnement", def: "Une valeur nommée utilisée par le système, comme $HOME (ton dossier) ou $PATH." },
+    { term: "~ (tilde)", def: "Raccourci vers ton dossier personnel (la « maison »). « cd ~ » y revient toujours." },
+    { term: "stdout / stderr", def: "La sortie normale (stdout) et la sortie d'erreur (stderr) d'une commande." },
+    { term: "Dépendance", def: "Un paquet requis par un autre pour fonctionner. Il est installé automatiquement avec lui." },
+    { term: "SSH", def: "Un protocole pour se connecter à distance à une autre machine, de façon chiffrée." },
+    { term: "APK", def: "Le format des applications Android : le fichier que l'on installe sur le téléphone." }
   ]
 };

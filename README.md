@@ -87,21 +87,29 @@ Dès que le code est sur GitHub, la compilation démarre **toute seule**.
 ## 🗂️ Que contient l'application ?
 
 - **Accueil** — présentation + terminal animé + accès rapide.
-- **Projets** — 21 projets guidés, étape par étape, chaque commande copiable :
-  - Premiers pas · Installer Linux (proot-distro) · Réseau & Wi-Fi (diagnostic) · Envoyer sur GitHub · Serveur web local · Connexion SSH · Télécharger des médias · Contrôler le téléphone (Termux:API) · Personnaliser le terminal · Script Python · Automatisation (cron) · Bot Telegram · JavaScript / Node.js · Retoucher des images (ImageMagick) · Générer des QR codes · S'amuser dans le terminal · **Synchroniser le cloud (rclone)** · **Transférer via QR code (qrcp)** · **Audio & vidéo (ffmpeg)** · **Exposer un serveur (cloudflared)** · **Multi-fenêtres (tmux)**.
-- **Codes** — 13 catégories de commandes prêtes à copier-coller (≈ 62 commandes), avec **recherche** et explications.
+- **Projets** — 29 projets guidés, étape par étape, chaque commande copiable :
+  - Premiers pas · Installer Linux (proot-distro) · Réseau & Wi-Fi (diagnostic) · Envoyer sur GitHub · Serveur web local · Connexion SSH · Télécharger des médias · Contrôler le téléphone (Termux:API) · Personnaliser le terminal · Script Python · Automatisation (cron) · Bot Telegram · JavaScript / Node.js · Retoucher des images (ImageMagick) · Générer des QR codes · S'amuser dans le terminal · Synchroniser le cloud (rclone) · Transférer via QR code (qrcp) · Audio & vidéo (ffmpeg) · Exposer un serveur (cloudflared) · Multi-fenêtres (tmux) · **Fiche système (fastfetch)** · **Le trio CLI moderne (fzf · bat · eza)** · **Surveiller le système (htop · ncdu)** · **Chiffrer des fichiers (gpg · openssl)** · **Base de données (SQLite)** · **Site sur GitHub Pages** · **Jouer dans le terminal** · **L'éditeur Vim / Neovim**.
+- **Codes** — 15 catégories de commandes prêtes à copier-coller (≈ 73 commandes), avec **recherche** et explications.
 - **Astuces** — les bonnes pratiques essentielles (F-Droid, touches manquantes, stockage…).
-- **Aide** — les **erreurs fréquentes** et leur solution, des **ressources** utiles (wiki, F-Droid, explainshell, tldr, cheat.sh) et le réglage de la **taille du texte**.
+- **Aide & réglages** — les **erreurs fréquentes** et leur solution, un **glossaire** des termes clés, des **ressources** utiles (wiki, F-Droid, explainshell, tldr, cheat.sh), le choix du **thème de couleur**, la **taille du texte** et la **sauvegarde/restauration**.
 
 ### ✨ Fonctionnalités
 
+- 🎨 **Coloration syntaxique** — les commandes, options, chaînes et variables sont colorées comme dans un éditeur de code (la copie reste exacte).
+- 🧭 **Progression d'ensemble** — l'accueil affiche ton avancement global et un bouton « Continuer » vers le prochain projet.
 - ⭐ **Favoris** — épingle tes projets et commandes préférés (étoile), avec filtre dédié.
-- ✅ **Progression** — coche les étapes terminées d'un projet ; une barre suit ton avancement (mémorisé).
-- 📋 **Copier tout** — récupère toutes les commandes d'un projet d'un seul geste.
+- 🗂️ **Filtres par catégorie** — trie les projets par thème (Bases, Système, Réseau, Dev, Média, Outils, Fun).
+- ✅ **Progression par projet** — coche les étapes terminées ; une barre suit ton avancement (mémorisé).
+- 📝 **Notes perso** — ajoute tes propres remarques sur chaque projet, gardées sur l'appareil.
+- 📋 **Copier tout / Exporter .sh** — récupère toutes les commandes d'un projet, ou génère un vrai script `.sh` prêt à lancer.
+- 📚 **Glossaire** — les termes clés (paquet, dépôt, `$PATH`, `chmod`, root…) expliqués au tap.
+- 🎨 **Thème de couleur** — choisis l'accent de l'app (vert, cyan, violet, ambre).
 - 🔍 **Recherche globale** — la loupe en haut cherche dans les projets, les commandes et le dépannage.
+- 💾 **Sauvegarde / restauration** — exporte et réimporte tes favoris, ta progression et tes notes.
 - 🔠 **Taille du texte** — quatre tailles réglables depuis l'onglet Aide.
+- 📳 **Retour haptique** — une légère vibration confirme chaque copie.
 
-> Favoris, progression et préférences sont **enregistrés sur l'appareil** : ils persistent entre les sessions.
+> Favoris, progression, notes et préférences sont **enregistrés sur l'appareil** : ils persistent entre les sessions.
 
 > 🔒 **À propos du Wi-Fi :** le projet « Réseau & Wi-Fi » se limite volontairement à du **diagnostic légitime** sur **ton propre réseau** (scan `nmap`, infos de connexion via Termux:API, `ping`, `ifconfig`). Aucun outil d'intrusion ou de cassage de mot de passe n'est inclus : analyser un réseau qui ne t'appartient pas est illégal.
 
