@@ -313,6 +313,99 @@ window.DATA = {
         { title: "Un petit train", desc: "Quand tu te trompes en tapant « ls »… un train traverse l'écran.", code: "pkg install sl -y && sl" }
       ],
       note: "Combine-les : cowsay \"Salut\" | lolcat affiche le texte en arc-en-ciel (pkg install lolcat)."
+    },
+
+    {
+      id: "cloud",
+      accent: "cyan",
+      icon: "☁️",
+      title: "Synchroniser le cloud",
+      tag: "Drive, Dropbox, OneDrive…",
+      level: "Intermédiaire",
+      time: "15 min",
+      intro: "rclone, c'est le rsync du cloud : il copie et synchronise tes fichiers entre le téléphone et Google Drive, Dropbox, OneDrive et 70+ services, en ligne de commande.",
+      steps: [
+        { title: "Installer rclone", desc: "L'outil de synchronisation cloud.", code: "pkg install rclone -y" },
+        { title: "Configurer un service", desc: "Assistant interactif : tape n (nouveau), donne un nom (ex. drive), choisis le service et suis les étapes de connexion.", code: "rclone config" },
+        { title: "Lister les fichiers distants", desc: "Vérifie la connexion en listant le contenu. Remplace 'drive' par le nom que tu as choisi.", code: "rclone ls drive:" },
+        { title: "Envoyer vers le cloud", desc: "Copie un dossier du téléphone vers le cloud.", code: "rclone copy ~/storage/shared/DCIM drive:Photos" },
+        { title: "Synchroniser un dossier", desc: "Garde un dossier identique des deux côtés.", code: "rclone sync ~/Documents drive:Backup" }
+      ],
+      note: "Attention : sync efface côté destination ce qui n'existe plus dans la source. Pour ajouter sans rien supprimer, utilise plutôt copy."
+    },
+
+    {
+      id: "qrcp",
+      accent: "violet",
+      icon: "📲",
+      title: "Transférer via QR code",
+      tag: "téléphone ↔ PC, sans câble",
+      level: "Facile",
+      time: "10 min",
+      intro: "qrcp partage un fichier sur ton réseau Wi-Fi en affichant un QR code (et une adresse) : tu scannes depuis l'autre appareil et le transfert démarre. Aucun câble, aucun compte.",
+      steps: [
+        { title: "Installer qrcp", desc: "L'outil de transfert par QR code.", code: "pkg install qrcp -y" },
+        { title: "Envoyer un fichier", desc: "Affiche un QR code et une URL. Scanne ou ouvre l'adresse sur l'autre appareil pour télécharger.", code: "qrcp send rapport.pdf" },
+        { title: "Recevoir des fichiers", desc: "Ouvre une page d'envoi : dépose-y des fichiers depuis le PC, ils arrivent sur le téléphone.", code: "qrcp receive" },
+        { title: "Choisir le dossier de réception", desc: "Range directement les fichiers reçus dans les Téléchargements.", code: "qrcp receive --output ~/storage/shared/Download" }
+      ],
+      note: "Les deux appareils doivent être sur le même réseau Wi-Fi. Sur un Wi-Fi public, le transfert peut être bloqué : crée un partage de connexion entre les deux."
+    },
+
+    {
+      id: "ffmpeg",
+      accent: "amber",
+      icon: "🎬",
+      title: "Audio & vidéo (ffmpeg)",
+      tag: "convertir, extraire, compresser",
+      level: "Intermédiaire",
+      time: "15 min",
+      intro: "ffmpeg est le couteau suisse du multimédia : il convertit, découpe, compresse et extrait l'audio de presque n'importe quel fichier audio ou vidéo, le tout en une ligne.",
+      steps: [
+        { title: "Installer ffmpeg", desc: "La boîte à outils audio/vidéo.", code: "pkg install ffmpeg -y" },
+        { title: "Extraire l'audio d'une vidéo", desc: "Récupère la piste audio en MP3.", code: "ffmpeg -i video.mp4 -q:a 0 -map a audio.mp3" },
+        { title: "Convertir un format", desc: "Passe d'un format à un autre (ici .mov vers .mp4).", code: "ffmpeg -i clip.mov clip.mp4" },
+        { title: "Compresser une vidéo", desc: "Réduit le poids. crf plus grand = plus léger mais moins net (23 à 28 = bon compromis).", code: "ffmpeg -i grosse.mp4 -vcodec libx264 -crf 28 petite.mp4" },
+        { title: "Couper un extrait", desc: "Garde 15 secondes à partir de la 10e seconde, sans réencoder.", code: "ffmpeg -i video.mp4 -ss 00:00:10 -t 00:00:15 -c copy extrait.mp4" }
+      ],
+      note: "Les fichiers doivent être accessibles : place-toi dans le bon dossier (cd ~/storage/shared/Movies) ou indique le chemin complet."
+    },
+
+    {
+      id: "tunnel",
+      accent: "green",
+      icon: "🌐",
+      title: "Exposer un serveur (tunnel)",
+      tag: "rendre ton site local public",
+      level: "Intermédiaire",
+      time: "10 min",
+      intro: "cloudflared crée un tunnel sécurisé vers un serveur qui tourne sur ton téléphone et te donne une adresse https publique — accessible partout, sans toucher à ta box ni ouvrir de port.",
+      steps: [
+        { title: "Installer cloudflared", desc: "Le client de tunnel de Cloudflare.", code: "pkg install cloudflared -y" },
+        { title: "Lancer un serveur local", desc: "Par exemple un serveur web simple sur le port 8000 (laisse-le tourner).", code: "python -m http.server 8000" },
+        { title: "Ouvrir un tunnel", desc: "Dans une 2e session Termux, crée le tunnel vers ce port.", code: "cloudflared tunnel --url http://localhost:8000" },
+        { title: "Partager l'adresse", desc: "Copie l'URL en .trycloudflare.com affichée : elle fonctionne depuis n'importe quel appareil, partout.", code: null }
+      ],
+      note: "L'adresse gratuite est temporaire et change à chaque lancement : parfait pour une démo express, pas pour héberger en continu."
+    },
+
+    {
+      id: "tmux",
+      accent: "violet",
+      icon: "🖥️",
+      title: "Multi-fenêtres (tmux)",
+      tag: "sessions qui survivent",
+      level: "Intermédiaire",
+      time: "10 min",
+      intro: "tmux découpe ton terminal en plusieurs volets et garde tes sessions vivantes même si tu fermes Termux : idéal pour lancer un serveur d'un côté et travailler de l'autre.",
+      steps: [
+        { title: "Installer tmux", desc: "Le multiplexeur de terminal.", code: "pkg install tmux -y" },
+        { title: "Démarrer une session", desc: "Tu entres dans tmux. La touche « préfixe » est Ctrl+B : on l'appuie avant chaque raccourci.", code: "tmux" },
+        { title: "Découper l'écran", desc: "Ctrl+B puis % (volet vertical) ou \" (volet horizontal). Ctrl+B puis une flèche pour passer d'un volet à l'autre.", code: null },
+        { title: "Détacher sans fermer", desc: "Ctrl+B puis D : tu sors mais la session continue en arrière-plan (ton serveur tourne toujours).", code: null },
+        { title: "Reprendre la session", desc: "Te rattache à la session laissée en cours.", code: "tmux attach" }
+      ],
+      note: "Lister les sessions ouvertes : tmux ls. Combiné avec « Acquire wakelock », un script peut tourner écran éteint."
     }
   ],
 
@@ -425,6 +518,41 @@ window.DATA = {
         { title: "Écrire dans un fichier", desc: "Envoie la sortie d'une commande dans un fichier.", code: "ls -la > liste.txt" },
         { title: "Filtrer un résultat", desc: "Ne garde que les lignes contenant un mot.", code: "pkg list-installed | grep python" }
       ]
+    },
+
+    {
+      name: "Aide & antisèches",
+      accent: "cyan",
+      items: [
+        { title: "Exemples d'une commande", desc: "tldr donne des exemples concrets, en mieux que man.", code: "pkg install tldr -y && tldr tar" },
+        { title: "Antisèche en ligne", desc: "Une fiche pour n'importe quelle commande (nécessite Internet).", code: "curl cheat.sh/ffmpeg" },
+        { title: "Le manuel complet", desc: "Le mode d'emploi détaillé d'une commande. Tape q pour quitter.", code: "man tar" },
+        { title: "Chercher une commande", desc: "Trouve les commandes liées à un mot-clé.", code: "apropos archive" },
+        { title: "Où est installé un outil ?", desc: "Affiche le chemin d'un programme.", code: "which python" }
+      ]
+    },
+
+    {
+      name: "Conversion & partage",
+      accent: "amber",
+      items: [
+        { title: "Markdown → Word", desc: "Convertit un .md en document Word (pkg install pandoc).", code: "pandoc notes.md -o notes.docx" },
+        { title: "Markdown → HTML", desc: "Génère une page web à partir d'un .md.", code: "pandoc notes.md -o notes.html" },
+        { title: "Vidéo → audio", desc: "Extrait la bande-son d'une vidéo (pkg install ffmpeg).", code: "ffmpeg -i video.mp4 audio.mp3" },
+        { title: "Envoyer vers le cloud", desc: "Copie un fichier vers un service configuré (pkg install rclone).", code: "rclone copy archive.zip drive:" },
+        { title: "Transférer par QR code", desc: "Partage un fichier sur le Wi-Fi local (pkg install qrcp).", code: "qrcp send photo.jpg" }
+      ]
+    },
+
+    {
+      name: "Traduction (trans)",
+      accent: "violet",
+      items: [
+        { title: "Installer translate-shell", desc: "Un traducteur directement dans le terminal.", code: "pkg install translate-shell -y" },
+        { title: "Traduire vers le français", desc: "Traduit le texte indiqué en français.", code: "trans :fr \"good morning\"" },
+        { title: "Traduire vers l'anglais", desc: "Traduit vers l'anglais.", code: "trans :en \"bonjour le monde\"" },
+        { title: "Version courte", desc: "L'option -b n'affiche que la traduction, sans détails.", code: "trans -b :es \"merci beaucoup\"" }
+      ]
     }
   ],
 
@@ -441,6 +569,73 @@ window.DATA = {
     { icon: "🛡️", title: "Reste dans la légalité", text: "Les outils réseau ne servent que sur tes propres réseaux ou avec autorisation. Accéder au réseau d'autrui sans permission est illégal." },
     { icon: "💾", title: "Sauvegarde ton travail", text: "Termux peut être réinitialisé. Garde tes projets importants sur GitHub ou copie-les dans ~/storage/shared." },
     { icon: "🔌", title: "Installe les apps compagnons", text: "Termux:API (batterie, torche, capteurs…), Termux:Boot (lancement au démarrage) et Termux:Styling (polices et couleurs) s'installent depuis F-Droid et débloquent plein de fonctions." },
-    { icon: "📤", title: "Ouvrir et partager un fichier", text: "termux-open fichier.pdf l'ouvre avec l'app Android adaptée. termux-share -a send photo.jpg propose de le partager (nécessite Termux:API)." }
+    { icon: "📤", title: "Ouvrir et partager un fichier", text: "termux-open fichier.pdf l'ouvre avec l'app Android adaptée. termux-share -a send photo.jpg propose de le partager (nécessite Termux:API)." },
+    { icon: "🔎", title: "Décrypter une commande", text: "Tu ne comprends pas une ligne ? Colle-la sur explainshell.com : il explique chaque morceau (le -rf, le |, les options…) en clair." },
+    { icon: "📋", title: "Des exemples, pas des pavés", text: "Plutôt que la page man, tape tldr <commande> pour des exemples concrets. Sans rien installer : curl cheat.sh/<commande>." },
+    { icon: "🧭", title: "Naviguer dans l'historique", text: "Flèche Haut rappelle la commande précédente. Ctrl+R (Volume Bas + R) cherche dans l'historique au fil de ta frappe." },
+    { icon: "🧹", title: "Libérer de l'espace", text: "pkg clean et pkg autoclean suppriment les paquets téléchargés devenus inutiles et récupèrent de la place." }
+  ],
+
+  /* ---------------------------------------------------------- DÉPANNAGE */
+  troubleshooting: [
+    {
+      icon: "🚫", accent: "red",
+      title: "command not found",
+      cause: "Le paquet n'est pas installé, ou son nom est différent de la commande.",
+      solution: "Installe l'outil. Si tu ne connais pas le nom du paquet, cherche-le.",
+      code: ["pkg install <nom> -y", "pkg search <mot-cle>"]
+    },
+    {
+      icon: "🔒", accent: "amber",
+      title: "Permission denied",
+      cause: "Le fichier n'est pas exécutable, ou tu tentes d'accéder à une zone protégée d'Android.",
+      solution: "Rends le script exécutable. Pour tes fichiers personnels, passe par ~/storage après termux-setup-storage.",
+      code: "chmod +x script.sh"
+    },
+    {
+      icon: "📡", accent: "cyan",
+      title: "Could not resolve host",
+      cause: "Pas de connexion, ou le miroir de paquets répond mal.",
+      solution: "Vérifie ton réseau, puis change de miroir et réessaie la mise à jour.",
+      code: ["termux-change-repo", "pkg update"]
+    },
+    {
+      icon: "📦", accent: "violet",
+      title: "Unable to locate package",
+      cause: "La liste locale des paquets est périmée.",
+      solution: "Mets à jour la liste avant d'installer quoi que ce soit.",
+      code: "pkg update && pkg upgrade -y"
+    },
+    {
+      icon: "🛠️", accent: "green",
+      title: "dpkg interrompu / paquet cassé",
+      cause: "Une installation a été coupée en cours de route.",
+      solution: "Répare la configuration des paquets, puis relance ton installation.",
+      code: "dpkg --configure -a"
+    },
+    {
+      icon: "🗄️", accent: "amber",
+      title: "No space left on device",
+      cause: "Le stockage est plein (cache de paquets, gros fichiers).",
+      solution: "Vide le cache, puis repère les fichiers les plus lourds pour faire le tri.",
+      code: ["pkg clean", "du -sh * | sort -h"]
+    },
+    {
+      icon: "🧊", accent: "red",
+      title: "Termux figé / écran bloqué",
+      cause: "Une commande tourne encore, ou la session est coincée.",
+      solution: "Volume Bas + C arrête la commande en cours. Sinon, ferme puis rouvre Termux. 'exit' ferme proprement une session.",
+      code: null
+    }
+  ],
+
+  /* --------------------------------------------------------- RESSOURCES */
+  resources: [
+    { icon: "📚", accent: "green",  name: "Wiki officiel Termux", desc: "La doc de référence : paquets, FAQ, astuces avancées.", value: "https://wiki.termux.com", kind: "url" },
+    { icon: "🤖", accent: "cyan",   name: "Termux sur F-Droid", desc: "La bonne source pour installer Termux et ses apps compagnons.", value: "https://f-droid.org/packages/com.termux/", kind: "url" },
+    { icon: "💬", accent: "violet", name: "Communauté r/termux", desc: "Poser des questions et voir les projets des autres.", value: "https://reddit.com/r/termux", kind: "url" },
+    { icon: "🔎", accent: "amber",  name: "explainshell.com", desc: "Colle une commande, il t'explique chaque morceau.", value: "https://explainshell.com", kind: "url" },
+    { icon: "📝", accent: "green",  name: "tldr — exemples express", desc: "Des exemples concrets pour chaque commande, dans le terminal.", value: "pkg install tldr -y", kind: "cmd" },
+    { icon: "⚡", accent: "cyan",   name: "cheat.sh — antisèche", desc: "Une fiche pour n'importe quelle commande, sans rien installer.", value: "curl cheat.sh/tar", kind: "cmd" }
   ]
 };

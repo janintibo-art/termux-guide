@@ -39,6 +39,24 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
+    /**
+     * Applique un facteur de zoom au texte de la WebView (préférence "taille
+     * de police"). setTextZoom agrandit uniquement le texte sans casser la mise
+     * en page ni les barres fixes. Appelé depuis JavaScript via le pont.
+     */
+    public void applyTextZoom(final int percent) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (webView == null) return;
+                int p = percent;
+                if (p < 50) p = 50;
+                if (p > 220) p = 220;
+                webView.getSettings().setTextZoom(p);
+            }
+        });
+    }
+
     @Override
     public void onBackPressed() {
         // On laisse d'abord l'application web gérer le retour (fermer un détail,
@@ -56,18 +74,18 @@ public class MainActivity extends Activity {
                 });
     }
 
-    /** Pont JavaScript -> Android pour le presse-papiers et les notifications. */
+    /** Pont JavaScript -> Android : presse-papiers, notifications, taille du texte. */
     public static class WebAppInterface {
-        private final Context context;
+        private final MainActivity host;
 
-        WebAppInterface(Context c) {
-            context = c;
+        WebAppInterface(MainActivity activity) {
+            host = activity;
         }
 
         @JavascriptInterface
         public void copy(String text) {
             ClipboardManager cb =
-                    (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                    (ClipboardManager) host.getSystemService(Context.CLIPBOARD_SERVICE);
             if (cb != null) {
                 cb.setPrimaryClip(ClipData.newPlainText("Commande Termux", text));
             }
@@ -75,7 +93,12 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void toast(String text) {
-            Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+            Toast.makeText(host, text, Toast.LENGTH_SHORT).show();
+        }
+
+        @JavascriptInterface
+        public void setFontScale(int percent) {
+            host.applyTextZoom(percent);
         }
     }
 }
